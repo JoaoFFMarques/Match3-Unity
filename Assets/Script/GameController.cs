@@ -1,0 +1,191 @@
+﻿using UnityEngine;
+using UnityEngine.SceneManagement;
+using UnityEngine.UI;
+
+public class GameController : MonoBehaviour
+{
+    public GameObject m_Board;
+    public string m_StageName;
+    public string m_NextScene;
+
+    [Header("Audio")]
+    public GameObject MusicSource;
+    public GameObject SFXSource;
+    public AudioClip SfxClear, SfxSelect, SfxSwap;
+
+    [Header("Points")]
+    public Slider m_PointsBar;
+    public Text m_PointsTxt;
+    public int m_Points;
+    public int m_TotalPoints;
+
+    [Header("Timer")]
+    public Slider m_TimerBar;
+    public Text m_TimerTxt;
+    public float m_Time = 120f;
+    private readonly string m_Mask = "000";
+
+    [Header("UI")]
+    public bool m_GamePause;
+    public Text m_StageText;
+    public GameObject m_Menu;
+    public GameObject m_Exit;
+    public GameObject m_StageClear;
+    public GameObject m_GameOver;
+    public GameObject m_AllClear;
+    public Text m_MscText;
+    public bool m_Music;
+    public Text m_SfxText;
+    public bool m_Sfx;
+
+    private void Start()
+    {   
+        m_PointsBar.maxValue = m_TotalPoints;
+        m_StageText.text = m_StageName;
+        MusicSource = GameObject.FindWithTag("MusicSource");
+        SFXSource = GameObject.FindWithTag("SFXSource");
+        if(MusicSource.GetComponent<AudioSource>().mute == true)
+        {
+            m_MscText.text = "MUSIC OFF";
+            m_Music = true;
+        }
+        else
+        {
+            m_MscText.text = "MUSIC ON";
+            m_Music = false;
+        }
+
+        if(SFXSource.GetComponent<AudioSource>().mute == true)
+        {
+            m_SfxText.text = "SFX OFF";
+            m_Sfx = true;
+        }
+        else
+        {
+            m_SfxText.text = "SFX ON";
+            m_Sfx = false;
+        }
+    }
+
+    private void FixedUpdate()
+    {
+        if(!m_GamePause)
+        {
+            TimerCounter();
+            if(m_Points >= m_TotalPoints)
+                StageClear();
+            if(m_Time <= 0)
+                GameOver();
+
+        }
+    }
+    public void PlaySFX(AudioClip sfxClip)
+    {
+        SFXSource.GetComponent<AudioSource>().PlayOneShot(sfxClip, 0.7f);
+    }
+    public void AddPoints()
+    {
+        m_PointsBar.value = m_Points;
+        m_PointsTxt.text = m_Points.ToString();
+    }
+    private void TimerCounter()
+    {
+        m_Time -= 1f * Time.fixedDeltaTime;
+        m_TimerBar.value = m_Time;
+        m_TimerTxt.text = m_Time.ToString(m_Mask);
+    }
+    public void GameQuit()
+    {
+        PlaySFX(SfxClear);
+        Application.Quit();
+    }
+    public void CallMenu()
+    {
+        PlaySFX(SfxClear);
+        m_Menu.SetActive(true);
+        m_Board.SetActive(false);
+        m_GamePause = true;
+    }
+    public void BackGameMenu()
+    {
+        PlaySFX(SfxClear);
+        m_Menu.SetActive(false);
+        m_Board.SetActive(true);
+        m_GamePause = false;
+    }
+    public void MusicSwitch()
+    {
+        PlaySFX(SfxClear);
+        if(!m_Music)
+        {
+            MusicSource.GetComponent<AudioSource>().mute=true;
+            m_MscText.text = "MUSIC OFF";
+            m_Music = true;
+        }
+        else
+        {
+            MusicSource.GetComponent<AudioSource>().mute = false;
+            m_MscText.text = "MUSIC ON";
+            m_Music = false;
+        }        
+    }
+    public void SFXSwitch()
+    {
+        PlaySFX(SfxClear);
+        if(!m_Sfx)
+        {
+            SFXSource.GetComponent<AudioSource>().mute = true;
+            m_SfxText.text = "SFX OFF";
+            m_Sfx = true;
+        }
+        else
+        {
+            SFXSource.GetComponent<AudioSource>().mute = false;
+            m_SfxText.text = "SFX ON";
+            m_Sfx = false;
+        }
+    }
+    public void CallExit()
+    {
+        PlaySFX(SfxClear);
+        m_Exit.SetActive(true);
+        m_Board.SetActive(false);
+        m_GamePause = true;
+    }
+    public void BackGameExit()
+    {
+        PlaySFX(SfxClear);
+        m_Exit.SetActive(false);
+        m_Board.SetActive(true);
+        m_GamePause = false;
+    }
+    private void StageClear()
+    {
+        PlaySFX(SfxClear);
+        m_Board.SetActive(false);
+        m_GamePause = true;
+        if(m_StageName == "STAGE 05")
+        {
+            m_AllClear.SetActive(true);
+        }
+        else
+            m_StageClear.SetActive(true);
+    }
+    public void NextStage()
+    {
+        PlaySFX(SfxClear);
+        SceneManager.LoadScene(m_NextScene);
+    }
+    public void PlayAgain()
+    {
+        PlaySFX(SfxClear);
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+    }
+    private void GameOver()
+    {
+        PlaySFX(SfxClear);
+        m_GameOver.SetActive(true);
+        m_Board.SetActive(false);
+        m_GamePause = true;
+    }
+}
