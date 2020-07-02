@@ -21,7 +21,11 @@ public class GemController : MonoBehaviour
         m_Color = new Color(.5f, .5f, .5f, 1.0f);
         m_Previous = null;
         m_Adjacent = new Vector2[] { Vector2.up, Vector2.down, Vector2.left, Vector2.right };
-    }  
+    }
+    private void Update()
+    {
+        CheckPosX();
+    }
     void OnMouseDown()
     {
         if(!_GameController.m_GamePause)
@@ -180,4 +184,24 @@ public class GemController : MonoBehaviour
         effect.GetComponent<ParticleSystem>().Play();     
     }
 
+    private void CheckPosX()
+    {
+        float posX = transform.position.x;
+        if(posX < 6 && posX > 5)
+            posX = 6;
+        else if(posX < 5 && posX > 4)
+            posX = 5;
+        else if(posX < 4 && posX > 3)
+            posX = 4;
+        else if(posX < 3 && posX > 2)
+            posX = 3;
+        else if(posX < 2 && posX > 1)
+            posX = 2;
+        else if(posX < 1 && posX > 0)
+            posX = 1;
+        else if(posX < 0)
+            posX = 0;
+
+        transform.position = new Vector2(posX, transform.position.y);
+    }
 }
