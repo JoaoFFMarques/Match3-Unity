@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.IO;
+using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
@@ -11,6 +12,7 @@ public class MenuController : MonoBehaviour
 
     [Header("UI")]
     public GameObject m_Exit;
+    public GameObject m_Continue;
     public GameObject m_Menu;
     public Text m_MscText;
     public bool m_Music;
@@ -27,9 +29,19 @@ public class MenuController : MonoBehaviour
         Application.Quit();
     }
     public void GameStart()
+    {        
+        PlaySFX(SfxClear);
+        if(File.Exists(Application.persistentDataPath + "/Stage.dat"))
+        {
+            m_Continue.SetActive(true);
+        }
+        else
+            SceneManager.LoadScene("Stage1");        
+    }
+    public void ContinueStart()
     {
         PlaySFX(SfxClear);
-        SceneManager.LoadScene("Stage1");        
+        SceneManager.LoadScene("Stage1");
     }
     public void CallExit()
     {
@@ -41,6 +53,11 @@ public class MenuController : MonoBehaviour
         PlaySFX(SfxClear);
         m_Exit.SetActive(false);
     }
+    public void BackContinue()
+    {
+        PlaySFX(SfxClear);
+        m_Continue.SetActive(false);
+    }
     public void CallMenu()
     {
         PlaySFX(SfxClear);
@@ -50,6 +67,11 @@ public class MenuController : MonoBehaviour
     {
         PlaySFX(SfxClear);
         m_Menu.SetActive(false);
+    }
+    public void ContinueButton()
+    {
+        PlaySFX(SfxClear);
+        SceneManager.LoadScene("Stage1");
     }
     public void MusicSwitch()
     {

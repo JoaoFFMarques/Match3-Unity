@@ -1,11 +1,14 @@
-﻿using UnityEngine;
+﻿using System.IO;
+using System.Runtime.Serialization.Formatters.Binary;
+using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class GameController : MonoBehaviour
 {
     public GameObject m_Board;
-    public string m_StageName;
+    private string m_StageName;
+    public static int m_StageN;
     public string m_NextScene;
 
     [Header("Audio")]
@@ -17,7 +20,8 @@ public class GameController : MonoBehaviour
     public Slider m_PointsBar;
     public Text m_PointsTxt;
     public int m_Points;
-    public int m_TotalPoints;
+    private int m_TotalPoints=90;
+    public static int m_IncrementalPoints;
 
     [Header("Timer")]
     public Slider m_TimerBar;
@@ -39,7 +43,12 @@ public class GameController : MonoBehaviour
     public bool m_Sfx;
 
     private void Start()
-    {   
+    {
+        m_StageN += 1;
+        m_IncrementalPoints += 10;
+        m_TotalPoints += m_IncrementalPoints;
+        StageName();
+        SaveStage();
         m_PointsBar.maxValue = m_TotalPoints;
         m_StageText.text = m_StageName;
         MusicSource = GameObject.FindWithTag("MusicSource");
@@ -65,6 +74,7 @@ public class GameController : MonoBehaviour
             m_SfxText.text = "SFX ON";
             m_Sfx = false;
         }
+        MusicSource.GetComponent<AudioSource>().loop = true;
     }
 
     private void FixedUpdate()
@@ -164,7 +174,7 @@ public class GameController : MonoBehaviour
         PlaySFX(SfxClear);
         m_Board.SetActive(false);
         m_GamePause = true;
-        if(m_StageName == "STAGE 05")
+        if(m_StageName == "STAGE 999")
         {
             m_AllClear.SetActive(true);
         }
@@ -174,11 +184,13 @@ public class GameController : MonoBehaviour
     public void NextStage()
     {
         PlaySFX(SfxClear);
-        SceneManager.LoadScene(m_NextScene);
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
     public void PlayAgain()
     {
         PlaySFX(SfxClear);
+        m_StageN -= 1;
+        m_IncrementalPoints -= 10;
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
     private void GameOver()
@@ -187,5 +199,24 @@ public class GameController : MonoBehaviour
         m_GameOver.SetActive(true);
         m_Board.SetActive(false);
         m_GamePause = true;
+    }
+    private void StageName()
+    {
+        if(m_StageN > 99)
+        {
+            m_StageName = "STAGE " + m_StageN.ToString("000");
+        }
+        else
+            m_StageName = "STAGE " + m_StageN.ToString("00");
+    }    
+    private void SaveStage()
+    {
+        
+        BinaryFormatter bf = new BinaryFormatter();               
+            
+        FileStream file = File.Create(Application.persistentDataPath + "/Stage.dat");
+        bf.Serialize(file, (m_StageN-1));
+        file.Close();
+       
     }
 }

@@ -42,7 +42,7 @@ public class BoardController : MonoBehaviour
                 {
                     while(!notEqualUp)
                     {
-                        if(m_Board[i - 1, j].tag == m_Board[i, j].tag)
+                        if(m_Board[i - 1, j].CompareTag(m_Board[i, j].tag))
                         {
                             Destroy(m_Board[i, j]);
                             m_Board[i, j] = Instantiate(m_Gems[Random.Range(0, m_Gems.Length)], new Vector2(startX + i, startY - j), Quaternion.identity);
@@ -56,7 +56,7 @@ public class BoardController : MonoBehaviour
                 {
                     while(!notEqualSide)
                     {
-                        if(m_Board[i, j - 1].tag == m_Board[i, j].tag)
+                        if(m_Board[i, j - 1].CompareTag(m_Board[i, j].tag))
                         {
                             Destroy(m_Board[i, j]);
                             m_Board[i, j] = Instantiate(m_Gems[Random.Range(0, m_Gems.Length)], new Vector2(startX + i, startY - j), Quaternion.identity);
@@ -78,8 +78,9 @@ public class BoardController : MonoBehaviour
             {
                 if(m_Board[i,j].GetComponent<SpriteRenderer>().sprite == null)
                 {
+                    Transform pos = m_Board[i, j].transform;
                     Destroy(m_Board[i, j]);
-                    m_Board[i, j] = Instantiate(m_Gems[Random.Range(0, m_Gems.Length)], new Vector2(i, startY+j), Quaternion.identity);
+                    m_Board[i, j] = Instantiate(m_Gems[Random.Range(0, m_Gems.Length)], new Vector2(pos.position.x, startY+1+j), Quaternion.identity);
                     m_Board[i, j].transform.SetParent(gameObject.transform);
                     current++;                    
                 }

@@ -14,6 +14,7 @@ public class GemController : MonoBehaviour
 
     private Vector2[] m_Adjacent;
 
+
     void Awake()
     {
         _GameController = FindObjectOfType(typeof(GameController)) as GameController;
@@ -62,8 +63,9 @@ public class GemController : MonoBehaviour
                 }
             }
         }
+        
     }
-
+   
     private void OnCollisionEnter2D()
     {
         if(!_GameController.m_GamePause)
@@ -76,16 +78,19 @@ public class GemController : MonoBehaviour
             if(m_Previous == null)
             {
                 m_Previous = gameObject.GetComponent<GemController>();
+                ClearAllMatches();
+                m_Previous.ClearAllMatches();
+                m_Previous.Deselect();
             }
             else
             {
+                ClearAllMatches();
                 m_Previous.ClearAllMatches();
                 m_Previous.Deselect();
-                ClearAllMatches();
+                
             }
         }
     }
-
     private void Select()
     {
         m_IsSelected = true;
@@ -187,7 +192,9 @@ public class GemController : MonoBehaviour
     private void CheckPosX()
     {
         float posX = transform.position.x;
-        if(posX < 6 && posX > 5)
+        if(posX > 6)
+            posX = 6;
+        else if(posX < 6 && posX > 5)
             posX = 6;
         else if(posX < 5 && posX > 4)
             posX = 5;
