@@ -14,11 +14,18 @@ public class GemController : MonoBehaviour
 
     private Vector2[] m_Adjacent;
 
+    private Vector2 firstPressPos;
+    private Vector2 secondPressPos;
+    private Vector2 currentSwipe;
+
+    private Rigidbody2D m_Body;
+
 
     void Awake()
     {
         _GameController = FindObjectOfType(typeof(GameController)) as GameController;
         m_GemRender = GetComponent<SpriteRenderer>();
+        m_Body = GetComponent<Rigidbody2D>();
         m_Color = new Color(.5f, .5f, .5f, 1.0f);
         m_Previous = null;
         m_Adjacent = new Vector2[] { Vector2.up, Vector2.down, Vector2.left, Vector2.right };
@@ -26,6 +33,8 @@ public class GemController : MonoBehaviour
     private void Update()
     {
         CheckPosX();
+        Swipe();
+        
     }
     void OnMouseDown()
     {
@@ -49,8 +58,8 @@ public class GemController : MonoBehaviour
                 else
                 {
                     if(GetAllAdjacentGems().Contains(m_Previous.gameObject))
-                    {
-                        Swap(m_Previous.m_GemRender);
+                    {                        
+                        Swap(this.GetComponent<GemController>(), m_Previous.m_GemRender);
                         m_Previous.ClearAllMatches();
                         m_Previous.Deselect();
                         ClearAllMatches();
@@ -63,32 +72,14 @@ public class GemController : MonoBehaviour
                 }
             }
         }
-        
-    }
-   
+    } 
     private void OnCollisionEnter2D()
-    {
+    {        
         if(!_GameController.m_GamePause)
         {
-            if(m_GemRender.sprite == null)
-            {
-                return;
-            }
-
-            if(m_Previous == null)
-            {
-                m_Previous = gameObject.GetComponent<GemController>();
+            gameObject.GetComponent<GemController>().ClearAllMatches();
+            if(m_Body.velocity.y == 0)
                 ClearAllMatches();
-                m_Previous.ClearAllMatches();
-                m_Previous.Deselect();
-            }
-            else
-            {
-                ClearAllMatches();
-                m_Previous.ClearAllMatches();
-                m_Previous.Deselect();
-                
-            }
         }
     }
     private void Select()
@@ -165,19 +156,20 @@ public class GemController : MonoBehaviour
             _GameController.PlaySFX(_GameController.SfxClear);
         }
     }
-    public void Swap(SpriteRenderer render)
+    public void Swap(GemController obj, SpriteRenderer render)
     {
-        if(m_GemRender.sprite == render.sprite)
-        { 
+
+        if(obj.m_GemRender.sprite == render.sprite)
+        {
             return;
         }
         GameObject tempTag = new GameObject();
-        Sprite tempSprite =  render.sprite;
+        Sprite tempSprite = render.sprite;
         tempTag.gameObject.tag = render.gameObject.tag;
-        render.sprite = m_GemRender.sprite;
-        render.gameObject.tag = m_GemRender.gameObject.tag;
-        m_GemRender.sprite = tempSprite;
-        m_GemRender.gameObject.tag = tempTag.gameObject.tag;
+        render.sprite = obj.m_GemRender.sprite;
+        render.gameObject.tag = obj.m_GemRender.gameObject.tag;
+        obj.m_GemRender.sprite = tempSprite;
+        obj.m_GemRender.gameObject.tag = tempTag.gameObject.tag;
         Destroy(tempTag);
 
         _GameController.PlaySFX(_GameController.SfxSwap);
@@ -188,7 +180,6 @@ public class GemController : MonoBehaviour
         effect.GetComponent<ParticleSystem>().textureSheetAnimation.AddSprite(m_GemRender.sprite);
         effect.GetComponent<ParticleSystem>().Play();     
     }
-
     private void CheckPosX()
     {
         float posX = transform.position.x;
@@ -210,5 +201,67 @@ public class GemController : MonoBehaviour
             posX = 0;
 
         transform.position = new Vector2(posX, transform.position.y);
+    }
+    public void Swipe()
+    {
+        if(m_Previous)
+        {
+            RaycastHit2D hit;
+            Vector2 pos = m_Previous.gameObject.transform.position;
+
+            if(Input.touches.Length > 0)
+            {
+                Touch t = Input.GetTouch(0);
+                if(t.phase == TouchPhase.Began)
+                    firstPressPos = new Vector2(t.position.x, t.position.y);
+                
+                if(t.phase == TouchPhase.Ended)
+                {                    
+                    secondPressPos = new Vector2(t.position.x, t.position.y);
+
+                    currentSwipe = new Vector3(secondPressPos.x - firstPressPos.x, secondPressPos.y - firstPressPos.y);
+
+                    currentSwipe.Normalize();
+
+                    //swipe upwards
+                    if(currentSwipe.y > 0 && currentSwipe.x > -0.5f && currentSwipe.x < 0.5f)
+                    {                        
+                        hit = Physics2D.Raycast(pos, Vector2.up);
+                        if(hit.collider)
+                            SwapChange(hit.collider.gameObject);
+                    }
+                    //swipe down
+                    if(currentSwipe.y < 0 && currentSwipe.x > -0.5f && currentSwipe.x < 0.5f)
+                    {
+                        hit = Physics2D.Raycast(pos, Vector2.down);
+                        if(hit.collider)
+                            SwapChange(hit.collider.gameObject);
+                    }
+                    //swipe left
+                    if(currentSwipe.x < 0 && currentSwipe.y > -0.5f && currentSwipe.y < 0.5f)
+                    {
+                        hit = Physics2D.Raycast(pos, Vector2.left);
+                        if(hit.collider)
+                            SwapChange(hit.collider.gameObject);
+                    }
+                    //swipe right
+                    if(currentSwipe.x > 0 && currentSwipe.y > -0.5f && currentSwipe.y < 0.5f)
+                    {
+                        hit = Physics2D.Raycast(pos, Vector2.right);
+                        if(hit.collider)
+                            SwapChange(hit.collider.gameObject);                        
+                    }
+                }
+            }
+        }
+    }
+    private void SwapChange(GameObject obj)
+    {
+        if(GetAllAdjacentGems().Contains(m_Previous.gameObject))
+        {
+            Swap(obj.GetComponent<GemController>(), m_Previous.m_GemRender);
+            obj.GetComponent<GemController>().ClearAllMatches();
+            m_Previous.Deselect();            
+        }
     }
 }

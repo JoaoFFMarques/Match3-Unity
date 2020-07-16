@@ -27,7 +27,7 @@ public class GameController : MonoBehaviour
     public Slider m_TimerBar;
     public Text m_TimerTxt;
     public float m_Time = 120f;
-    private readonly string m_Mask = "000";
+    private int m_IncremntTime;
 
     [Header("UI")]
     public bool m_GamePause;
@@ -47,6 +47,8 @@ public class GameController : MonoBehaviour
         m_StageN += 1;
         m_IncrementalPoints += 10;
         m_TotalPoints += m_IncrementalPoints;
+        m_IncremntTime = m_StageN / 10;
+        m_Time += (m_IncremntTime * 10);
         StageName();
         SaveStage();
         m_PointsBar.maxValue = m_TotalPoints;
@@ -100,9 +102,11 @@ public class GameController : MonoBehaviour
     }
     private void TimerCounter()
     {
+        int mins = (int)m_Time / 60;
+        int secs = (int)m_Time % 60;
         m_Time -= 1f * Time.fixedDeltaTime;
         m_TimerBar.value = m_Time;
-        m_TimerTxt.text = m_Time.ToString(m_Mask);
+        m_TimerTxt.text = mins.ToString("00")+":"+secs.ToString("00");
     }
     public void GameQuit()
     {

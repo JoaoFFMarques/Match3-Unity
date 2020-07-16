@@ -36,11 +36,17 @@ public class MenuController : MonoBehaviour
             m_Continue.SetActive(true);
         }
         else
-            SceneManager.LoadScene("Stage1");        
+        {
+            GameController.m_IncrementalPoints = 0;
+            GameController.m_StageN = 0;
+            SceneManager.LoadScene("Stage1");
+        }
     }
     public void ContinueStart()
     {
         PlaySFX(SfxClear);
+        GameController.m_IncrementalPoints = 0;
+        GameController.m_StageN = 0;
         SceneManager.LoadScene("Stage1");
     }
     public void CallExit()
